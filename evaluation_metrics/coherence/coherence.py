@@ -1,15 +1,15 @@
 import numpy as np
 
 class Coherence():
-	def __init__(self,classifier):
-		self.classifier = classifier
+	def __init__(self,M=20):
+		self.M = M
 
-	def score(self,X,y,M):
-		self.classifier.fit(X,y)
-		topics = self.classifier.classes_
+	def score(self,classifier,X,y):
+		classifier.fit(X,y)
+		topics = classifier.classes_
 		coherences = np.zeros(topics.shape[0])
 		for topic in topics:
-			coherences[topic] = coherence(self.classifier.estimators_[topic].coef_,X,M)
+			coherences[topic] = coherence(classifier.estimators_[topic].coef_,X,self.M)
 		return coherences
 
 
