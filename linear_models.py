@@ -6,6 +6,21 @@ from evaluation_metrics.pipelines import pipelines
 from evaluation_metrics.coherence import coherence
 from evaluation_metrics.datasets import twenty_newsgroups
 
+def make_classifiers(clfs,penalties,Cs):
+	clfDict = {
+		"LogisticRegression":linear_model.LogisticRegression,
+		"SGDClassifier":linear_model.SGDClassifier,
+		"RidgeClassifier":linear_model.RidgeClassifier,
+		"PassiveAggressiveClassifier":linear_model.PassiveAggressiveClassifier
+	}
+	classifiers = []
+	for clf in clfs:
+		if clf in clfDict:
+			for penalty in penalties:
+				for C in Cs:
+					classifiers.append(OneVsRestClassifier(clfDict[clf](penalty=penalty,C=C)))
+	return classifiers
+
 def logistic_regressions():
 	logreg = OneVsRestClassifier(linear_model.LogisticRegression())
 	return logreg
@@ -23,7 +38,12 @@ def passive_aggressive_classifiers():
 	return pa
 
 def get_classifers():
-	classifers = [logistic_regressions(), sgd_classifiers(), ridge_classifiers(), passive_aggressive_classifiers()]
+	clfTypes = [logistic_regressions(), sgd_classifiers(), ridge_classifiers(), passive_aggressive_classifiers()]
+	classifiers = []
+	for clfType in clfTypes:
+		if not isinstance(clfType,list):
+			clfType = [clfType]
+		classifiers += clfType
 	return classifers
 	
 def zip3(a1,a2,a3):
@@ -36,13 +56,23 @@ def zip3(a1,a2,a3):
 
 def main():
 	data = twenty_newsgroups.TwentyNewsgroups()
-	classifers = get_classifers()
+	#classifers = get_classifers()
+	#params = {
+			#'LogisticRegression':{'C':[.1,1.0,10.0,100.0],'penalty'=['l1','l2']}
+	#}
+	penalties = ['l1', 'l2']
+	Cs = [.1,1.0,10.0,100.0]
+	clfs = ["LogisticRegression"]#,"SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
+	classifers = make_classifiers(clfs,penalties,Cs)
+
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
 	cohere = coherence.Coherence()
+
 	testSet = zip3(classifers,[cv],[cohere])
 	pipe = pipelines.Pipeline(testSet)
 	scores = pipe.evaluate(data.X,data.y)
-	np.savetxt("scores.csv", scores, delimiter=",")
+
+	np.savetxt("scores_LOGREG.csv", scores, delimiter=",")
 
 	
 
