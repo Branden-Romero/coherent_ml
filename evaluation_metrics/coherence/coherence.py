@@ -10,7 +10,7 @@ class Coherence():
 		topics = classifier.classes_
 		coherences = np.zeros(topics.shape[0])
 		for topic in topics:
-			coherences[topic] = coherence(classifier.estimators_[topic].coef_,X,self.M,type)
+			coherences[topic] = coherence(classifier.estimators_[topic].coef_,X,self.M,self.type)
 		return coherences
 
 def topic_coherence(vmvl,vm,vl):
@@ -26,6 +26,7 @@ def oc_auto_lcp(Pwjwi,Pwi,Pwj):
 	return np.log(Pwjwi/Pwi)
 
 def coherence(coefs,X,M,type):
+	numDocs = X.shape[0]
 	coherenceType = {
 			'default': topic_coherence,
 			'OC-Auto-PMI': oc_auto_pmi,
@@ -41,13 +42,14 @@ def coherence(coefs,X,M,type):
 		for l in xrange(0,m-1):
 			vm = np.nonzero(X[:,topTokens[m]])[0].shape[0]
 			vl = np.nonzero(X[:,topTokens[l]])[0].shape[0]
-			vmvl = np.intersect(vm,vl).shape[0]
+			vmvl = np.intersect1d(vm,vl).shape[0]
 			if type == 'default':
 				cohere += coherenceMetric(vmvl,vm,vl)
 			else:
-				Pwjwi = vmvl/float(numDocs)
-				Pwi = vl/float(numDocs)
-				Pwj = vm/float(numDocs)
+				#Added smoothing factor
+				Pwjwi = (vmvl+1)/float(numDocs)
+				Pwi = (vl+1)/float(numDocs)
+				Pwj = (vm+1)/float(numDocs)
 				cohere += coherenceMetric(Pwjwi,Pwi,Pwj)
 
 	return cohere	
