@@ -57,8 +57,8 @@ def zip3(a1,a2,a3):
 def main():
 	data = twenty_newsgroups.TwentyNewsgroups()
 	penalties = ['l1']#, 'l2']
-	Cs = [0.1]#,1.0,10.0,100.0]
-	clfs = ["LogisticRegression"]#,"SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
+	Cs = [0.1,1.0,10.0,100.0]
+	clfs = ["LogisticRegression","SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
 	classifers = make_classifiers(clfs,penalties,Cs)
 
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
@@ -70,9 +70,9 @@ def main():
 
 	testSet = zip3(classifers,[cv],cohere)
 	pipe = pipelines.Pipeline(testSet)
-	scores = pipe.evaluate(data.X[:250],data.y[:250])
+	scores = pipe.evaluate(data.X,data.y)
 
-	np.savetxt("ds_test.csv", scores, delimiter=",")
+	np.savetxt("ds_test_part2.csv", scores, delimiter=",")
 
 	
 
