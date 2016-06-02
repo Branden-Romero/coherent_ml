@@ -3,16 +3,17 @@ import scipy.misc
 import math
 
 class Coherence():
-	def __init__(self,type='default',M=20):
+	def __init__(self,M=20,type='default',dist='cosine'):
 		self.M = M
 		self.type = type
+		self.dist = dist
 
 	def score(self,classifier,X,y):
 		classifier.fit(X,y)
 		topics = classifier.classes_
 		coherences = np.zeros(topics.shape[0])
 		for topic in topics:
-			coherences[topic] = coherence(classifier.estimators_[topic].coef_,X,self.M,self.type)
+			coherences[topic] = coherence(classifier.estimators_[topic].coef_,X,self.M,type=self.type,dist=self.dist)
 		return coherences
 
 def topic_coherence(vmvl,vm,vl):
@@ -28,22 +29,22 @@ def oc_auto_lcp(Pwjwi,Pwi):
 	return np.log(Pwjwi/Pwi)
 
 def sim_cos(wi,wj):
-	return np.dot(wi,wj)/(np.linalg.norm(wi)*np.linalg.norm(wj))
+	return (np.dot(wi,wj)+1)/(np.linalg.norm(wi)*np.linalg.norm(wj)+1)
 
 def sim_dice(wi,wj):
 	N = wi.shape[0]
-	return (2*np.sum([min(wi[n],wj[n]) for n in xrange(N)]))/np.sum(wi+wj)
+	return (2*np.sum([min(wi[n],wj[n]) for n in xrange(N)])+1)/(np.sum(wi+wj)+1)
 		
 def sim_jaccard(wi,wj):
 	N = wi.shape[0]
-	return np.sum([min(wi[n],wj[n]) for n in xrange(N)])/np.sum([max(wi[n],wj[n]) for n in xrange(N)])
+	return (np.sum([min(wi[n],wj[n]) for n in xrange(N)])+1)/(np.sum([max(wi[n],wj[n]) for n in xrange(N)])+1)
 
 def oc_auto_ds(wi,wj,dist=sim_cos):
 	return dist(wi,wj)
 	
 	
 
-def coherence(coefs,X,M,type,dist='cosine'):
+def coherence(coefs,X,M,type='default',dist='cosine'):
 	numDocs = X.shape[0]
 	coherenceType = {
 			'default': topic_coherence,
@@ -55,9 +56,9 @@ def coherence(coefs,X,M,type,dist='cosine'):
 
 	if type == 'OC-Auto-DS':
 		distributionType = {
-					'cosine': sim_cos:
-					'dice': sim_dice:
-					'jaccard': sim_jaccard:
+					'cosine': sim_cos,
+					'dice': sim_dice,
+					'jaccard': sim_jaccard
 		}	
 
 	coherenceMetric = coherenceType[type]
@@ -73,8 +74,8 @@ def coherence(coefs,X,M,type,dist='cosine'):
 				cohere += coherenceMetric(vmvl,vm,vl)
 
 			elif type == 'OC-Auto-DS':
-				wi = (topTokens[m] > 0).astype(np.int)
-				wj = (topTokens[l] > 0).astype(np.int)
+				wi = (X[:,topTokens[m]] > 0).astype(np.int).toarray().T[0]
+				wj = (X[:,topTokens[l]] > 0).astype(np.int).toarray().T[0]
 				distribution = distributionType[dist]
 				cohere += coherenceMetric(wi,wj,distribution)
 
@@ -98,7 +99,7 @@ def coherence(coefs,X,M,type,dist='cosine'):
 				cohere += coherenceMetric(Pwjwi,Pwi,Pwj)
 
 	if type == 'OC-Auto-DS':
-		cohere = cohere/scipy.misc(M,2)
+		cohere = cohere/scipy.misc.comb(M,2)
 		
 	return cohere	
 
