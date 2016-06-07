@@ -56,9 +56,9 @@ def zip3(a1,a2,a3):
 
 def main():
 	data = twenty_newsgroups.TwentyNewsgroups()
-	penalties = ['l1']#, 'l2']
+	penalties = ['l1', 'l2']
 	Cs = [0.1,1.0,10.0,100.0]
-	clfs = ["LogisticRegression","SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
+	clfs = ["LogisticRegression"]#,"SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
 	classifers = make_classifiers(clfs,penalties,Cs)
 
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
