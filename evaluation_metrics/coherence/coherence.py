@@ -8,8 +8,9 @@ class Coherence():
 		self.type = type
 		self.dist = dist
 
-	def score(self,classifier,X,y):
-		classifier.fit(X,y)
+	def score(self,classifier,X,y,fit=True):
+		if fit == True:
+			classifier.fit(X,y)
 		topics = classifier.classes_
 		coherences = np.zeros(topics.shape[0])
 		for topic in topics:
@@ -62,7 +63,7 @@ def coherence(coefs,X,M,type='default',dist='cosine'):
 		}	
 
 	coherenceMetric = coherenceType[type]
-	topTokens = (-coefs).argsort()[:M][0]
+	topTokens = (-coefs).argsort()[0][:M]
 	cohere = 0	
 
 	for m in xrange(1,M):
