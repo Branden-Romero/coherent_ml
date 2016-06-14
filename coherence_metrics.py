@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from sklearn import linear_model
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn import cross_validation
@@ -57,7 +58,8 @@ def zip3(a1,a2,a3):
 def main():
 	data = twenty_newsgroups.TwentyNewsgroups()
 	penalties = ['l1', 'l2']
-	Cs = [0.1,1.0,10.0,100.0]
+	#Cs = [0.1,1.0,10.0,100.0]
+	Cs = [0.01,1000.0]
 	clfs = ["LogisticRegression"]#,"SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
 	classifers = make_classifiers(clfs,penalties,Cs)
 
@@ -70,10 +72,11 @@ def main():
 		]
 
 	testSet = zip3(classifers,[cv],cohere)
+	#print(len(testSet))
+	
 	pipe = pipelines.Pipeline(testSet)
 	scores = pipe.evaluate(data.X,data.y)
-
-	np.savetxt("scores_coherence_test.csv", scores, delimiter=",")
+	np.savetxt("scores_coherence_test2222.csv", scores, delimiter=",")
 
 	
 
