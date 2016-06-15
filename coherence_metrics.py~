@@ -1,10 +1,11 @@
 import numpy as np
+import time
 from sklearn import linear_model
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn import cross_validation
 from evaluation_metrics.pipelines import pipelines
 from evaluation_metrics.coherence import coherence
-from datasets import twenty_newsgroups
+from evaluation_metrics.datasets import twenty_newsgroups
 
 def make_classifiers(clfs,penalties,Cs):
 	clfDict = {
@@ -57,36 +58,28 @@ def zip3(a1,a2,a3):
 def main():
 	data = twenty_newsgroups.TwentyNewsgroups()
 	penalties = ['l1', 'l2']
-	Cs = [1.0]
+	#Cs = [0.1,1.0,10.0,100.0]
+	Cs = [0.01,1000.0]
 	clfs = ["LogisticRegression"]#,"SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
 	classifers = make_classifiers(clfs,penalties,Cs)
 
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
 	cohere = [
-			
-			#coherence.Coherence(M=5,type='default'),
-			#coherence.Coherence(M=50,type='default'),
-			#coherence.Coherence(M=100,type='default'),
-			#coherence.Coherence(M=5,type='OC-Auto-PMI'),
-			#coherence.Coherence(M=50,type='OC-Auto-PMI'),
-			#coherence.Coherence(M=100,type='OC-Auto-PMI'),
-			#coherence.Coherence(M=5,type='OC-Auto-NPMI'),
-			#coherence.Coherence(M=50,type='OC-Auto-NPMI'),
-			#coherence.Coherence(M=100,type='OC-Auto-NPMI'),
-			coherence.Coherence(M=5,type='OC-Auto-LCP'),
-			coherence.Coherence(M=10,type='OC-Auto-LCP'),
-			#coherence.Coherence(M=50,type='OC-Auto-LCP'),	
-			#coherence.Coherence(M=100,type='OC-Auto-LCP')
-			
+			coherence.Coherence(type='default'),
+			coherence.Coherence(type='OC-Auto-PMI'),
+			coherence.Coherence(type='OC-Auto-NPMI'),
+			coherence.Coherence(type='OC-Auto-LCP')
 		]
 
 	testSet = zip3(classifers,[cv],cohere)
+	#print(len(testSet))
+	
 	pipe = pipelines.Pipeline(testSet)
 	scores = pipe.evaluate(data.X,data.y)
-
-	np.savetxt("num_test_part1.csv", scores, delimiter=",")
+	np.savetxt("scores_coherence_test2222.csv", scores, delimiter=",")
 
 	
 
 if __name__ == "__main__":
 	main()
+	

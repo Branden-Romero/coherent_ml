@@ -4,7 +4,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn import cross_validation
 from evaluation_metrics.pipelines import pipelines
 from evaluation_metrics.coherence import coherence
-from evaluation_metrics.datasets import twenty_newsgroups
+from datasets import twenty_newsgroups
 
 def make_classifiers(clfs,penalties,Cs):
 	clfDict = {

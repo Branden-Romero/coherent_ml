@@ -1,4 +1,4 @@
-from datasets import twenty_newsgroups
+from evaluation_metrics.datasets import twenty_newsgroups
 from linear_models import multinominal_logistic_regression
 from sklearn import linear_model
 import numpy as np
