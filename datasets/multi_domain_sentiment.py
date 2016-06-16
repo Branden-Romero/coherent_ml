@@ -14,7 +14,7 @@ class SentimentData():
 
 def load(domain):
 	user = getpass.getuser()
-	dir = '/home/{0}/coherent_ml/evaluation_metrics/datasets/{1}'
+	dir = '/home/{0}/coherent_ml/datasets/{1}'
 	domains = {
 		'books':'books.pkl',
 		'dvd':'dvd.pkl',
@@ -29,27 +29,27 @@ def make():
 	user = getpass.getuser()
 	domains = ['books','dvd','electronics','kitchen']
 	fileIn = '/home/{0}/processed_stars/{1}/all_balanced.review'
-	fileOut = '/home/{0}/coherent_ml/evaluation_metrics/datasets/{1}.pkl'
+	fileOut = '/home/{0}/coherent_ml/datasets/{1}.pkl'
 	if os.path.isfile(fileOut.format(user,domains[-1])) == False:
+		with open(fileIn.format(user,'all')) as f:
+			lines = f.readlines()
+
+		M = len(lines)
+		vocab = dict()
+
+		for line in xrange(M):
+			for pair in lines[line].split():
+				word = re.search('.*:',pair).group()[:-1]
+				if word != '#label#':
+					if word not in vocab:
+						vocab[word] = len(vocab)
+
 		for domain in domains:
 			with open(fileIn.format(user,domain)) as f:
 				lines = f.readlines()
-
 			M = len(lines)
-			y = np.zeros(M)
-			vocab = dict()
-
-			for line in xrange(M):
-				for pair in lines[line].split():
-					word = re.search('.*:',pair).group()[:-1]
-					if word != '#label#':
-						if word not in vocab:
-							vocab[word] = len(vocab)
-					else:
-						value = np.float16(re.search(':.*',pair).group()[1:])
-						y[line] = value
-
 			N = len(vocab)
+			y = np.zeros(M,dtype=np.uint8)
 			#X = np.zeros((M,N))
 			row = []
 			col = []
@@ -65,6 +65,10 @@ def make():
 						col.append(wordInd)
 						data.append(value)
 						#X[line,wordInd] = value
+					else:
+						value = int(re.search(':.*',pair).group()[1:-2])
+						y[line] = value
+						
 			row = np.array(row)
 			col = np.array(col)
 			data = np.array(data)

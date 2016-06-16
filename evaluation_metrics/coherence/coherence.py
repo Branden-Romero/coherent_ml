@@ -11,9 +11,9 @@ class Coherence():
 	def score(self,classifier,X,y,fit=True):
 		if fit == True:
 			classifier.fit(X,y)
-		topics = classifier.classes_
-		coherences = np.zeros(topics.shape[0])
-		for topic in topics:
+		topicSz = classifier.classes_.shape[0]
+		coherences = np.zeros(topicSz)
+		for topic in xrange(topicSz):
 			coherences[topic] = coherence(classifier.estimators_[topic].coef_,X,self.M,type=self.type,dist=self.dist)
 		return coherences
 
