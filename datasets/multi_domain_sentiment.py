@@ -49,7 +49,7 @@ def make():
 				lines = f.readlines()
 			M = len(lines)
 			N = len(vocab)
-			y = np.zeros(M,dtype=np.uint8)
+			y = np.zeros(M,dtype=np.float32)
 			#X = np.zeros((M,N))
 			row = []
 			col = []
@@ -60,7 +60,7 @@ def make():
 					word = re.search('.*:',pair).group()[:-1]
 					if word != '#label#':
 						wordInd = vocab[word]
-						value = np.uint8(re.search(':.*',pair).group()[1:])
+						value = np.float32(re.search(':.*',pair).group()[1:])
 						row.append(line)
 						col.append(wordInd)
 						data.append(value)
@@ -72,7 +72,7 @@ def make():
 			row = np.array(row)
 			col = np.array(col)
 			data = np.array(data)
-			X = sps.csr_matrix((data, (row,col)),shape=(M,N), dtype=np.uint8)
+			X = sps.csr_matrix((data, (row,col)),shape=(M,N), dtype=np.float32)
 			sorted_vocab = sorted(vocab.items(), key=operator.itemgetter(1))
 			vocab_list = [v[0] for v in sorted_vocab]
 
