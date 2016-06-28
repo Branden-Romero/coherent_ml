@@ -26,59 +26,48 @@ def get_batches(X,y,batch_size):
         return batches
 
 class LogisticRegression():
-	def __init__(self):	
-		self.W = None
-		self.b = None
+	session = tf.InteractiveSession()
+	def __init__(self):
 		self.y = None
 		self.X = None
 		self.y_ = None
-		self.classes = None
 
-	def fit(self, X_data, y_data,learning_rate=0.01,training_epochs=25,batch_size=100):
+	def fit(self, X_data, y_data,learning_rate=0.01,training_epochs=25,batch_size=100,C=1.0):
 		M,N = X_data.shape
+		K = y_data.shape[1]
+
 		if sps.issparse(X_data) == True:
 			X_data = X_data.toarray()
-		self.classes = np.array(range(y_data.shape[1]))
+
 		self.X = tf.placeholder(tf.float32, [None,N])
-		self.y_ = tf.placeholder(tf.float32, [None,self.classes.shape[0]])
-		self.W = tf.Variable(tf.zeros([N,self.classes.shape[0]]))
-		self.b = tf.Variable(tf.zeros([self.classes.shape[0]]))
+		self.y_ = tf.placeholder(tf.float32, [None,K])
 
-		self.y = tf.nn.softmax(tf.matmul(self.X,self.W)+self.b)
-		cross_entropy = tf.reduce_mean(-tf.reduce_sum(self.y_*tf.log(self.y), reduction_indices=[1]))
-		train_step = tf.train.AdadeltaOptimizer().minimize(cross_entropy)
+		W = tf.Variable(tf.zeros([N,K]))
+		b = tf.Variable(tf.zeros([K]))
 
-		init = tf.initialize_all_variables()
+		self.y = tf.nn.softmax(tf.matmul(self.X,W)+b)
+		loss_function = -tf.reduce_sum(self.y_*tf.log(self.y)) + C * tf.reduce_sum(tf.abs(W))#C/2.0 * tf.nn.l2_loss(W)
 
-		with tf.Session() as sess:
-			sess.run(init)
-			for epoch in xrange(training_epochs):
-				for batch in get_batches(X_data,y_data,batch_size):
-					train_step.run(feed_dict={self.X: batch[0], self.y_:batch[1]})
+		train_step = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_function)
+
+		tf.initialize_all_variables().run()
+
+		for epoch in xrange(training_epochs):
+			for batch in get_batches(X_data,y_data,batch_size):
+				train_step.run({self.X: batch[0], self.y_:batch[1]})
+
 
 	def predict(self, X_data):
 		if sps.issparse(X_data) == True:
 			X_data = X_data.toarray()
-
 		evaluation = tf.argmax(self.y,1)
-		init = tf.initialize_all_variables()
-
-		with tf.Session() as sess:
-			sess.run(init)
-			prediction = sess.run(evaluation, feed_dict={self.X: X_data})
-
+		prediction = self.session.run(self.y, feed_dict={self.X: X_data})
 		return prediction
 
 	def score(self,X_data,y_data):
 		if sps.issparse(X_data) == True:
 			X_data = X_data.toarray()
-
 		correct_prediction = tf.equal(tf.argmax(self.y,1), tf.argmax(self.y_,1))
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-		init = tf.initialize_all_variables()
-
-		with tf.Session() as sess:
-			sess.run(init)
-			score = sess.run(accuracy, feed_dict={self.X: X_data, self.y_: y_data})
-
+		score = accuracy.eval({self.X: X_data, self.y_: y_data})
 		return score

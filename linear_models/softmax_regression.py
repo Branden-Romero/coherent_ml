@@ -14,7 +14,7 @@ def softmax(a,c):
 
 def gradient(X,y,W,cls):
 	y = np.reshape(y,(-1,1))
-	return -np.sum(X*((y==cls)-np.reshape(softmax(np.dot(W,X.T),cls),(-1,1))),axis=0)
+	return np.sum(X*(np.reshape(softmax(np.dot(W,X.T),cls),(-1,1))-(y==cls)),axis=0)
 	
 	
 def GD(X,y,W,classes,penalty,C,step_size=0.001,delta=.01,max_iterations=10):
