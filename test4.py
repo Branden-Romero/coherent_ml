@@ -17,16 +17,16 @@ X_train = X[:10000]
 y_train = y[:10000]
 X_test = X[10000:]
 y_test = y[10000:]
-
+'''
 #clf2 = linear_model.LogisticRegression(multi_class='multinomial',solver='newton-cg')
 clf2 = linear_model.SGDClassifier(loss='log')
 clf2.fit(X_train,y_train,)
 scoreclf2 = clf2.score(X_test,y_test)
 print(scoreclf2)
-
+'''
 y_test = hot_one_conv(y_test)
 y_train = hot_one_conv(y_train)
 clf = tf_softmax_regression.LogisticRegression()
-clf.fit(X_train,y_train)
+clf.fit(X_train,y_train,C=10)
 scoreclf = clf.score(X_test,y_test)
 print(scoreclf)
