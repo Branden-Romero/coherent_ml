@@ -4,7 +4,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn import cross_validation
 from evaluation_metrics.pipelines import pipelines
 from evaluation_metrics.coherence import coherence
-from evaluation_metrics.datasets import twenty_newsgroups
+from datasets import twenty_newsgroups
 
 def make_classifiers(clfs,penalties,Cs):
 	clfDict = {
@@ -66,13 +66,14 @@ def main():
 	classifers = make_classifiers(clfs,penalties,Cs)
 
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
-	cohere = coherence.Coherence()
+	Ms = [10,50,100,150]
+	cohere = [coherence.Coherence(M=M,type='OC-Auto-NPMI') for M in Ms]
 
-	testSet = zip3(classifers,[cv],[cohere])
+	testSet = zip3(classifers,[cv],cohere)
 	pipe = pipelines.Pipeline(testSet)
 	scores = pipe.evaluate(data.X,data.y)
 
-	np.savetxt("scores_LOGREG.csv", scores, delimiter=",")
+	np.savetxt("scores_topic_size.csv", scores, delimiter=",")
 
 	
 

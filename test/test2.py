@@ -12,16 +12,13 @@ def hot_one_conv(y):
         return y_hot_one
 
 dvd = multi_domain_sentiment.load('dvd')
-'''
 change = np.where(dvd.y > 2)
 dvd.y[change] = dvd.y[change] - 1
 y = hot_one_conv((dvd.y-1).astype(np.int))
-'''
-y = dvd.y
 X_train = dvd.X[:-1000]
 X_test = dvd.X[-1000:]
 y_train = y[:-1000]
 y_test = y[-1000:]
-clf = linear_model.SGDClassifier(loss='log')
+clf = tf_softmax_regression.LogisticRegression()
 clf.fit(X_train,y_train)
 print(clf.score(X_test,y_test))

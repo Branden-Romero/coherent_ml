@@ -61,18 +61,18 @@ def main():
 			#'LogisticRegression':{'C':[.1,1.0,10.0,100.0],'penalty'=['l1','l2']}
 	#}
 	penalties = ['l1', 'l2']
-	Cs = [.1,1.0,10.0,100.0]
+	Cs = [1.0]
 	clfs = ["LogisticRegression"]#,"SGDClassifier","RidgeClassifier","PassiveAggressiveClassifier"]
 	classifers = make_classifiers(clfs,penalties,Cs)
 
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
-	cohere = coherence.Coherence()
+	cohere = [coherence.Coherence(type='OC-Auto-NPMI')]
 
-	testSet = zip3(classifers,[cv],[cohere])
+	testSet = zip3(classifers,[cv],cohere)
 	pipe = pipelines.Pipeline(testSet)
 	scores = pipe.evaluate(data.X,data.y)
 
-	np.savetxt("scores_LOGREG.csv", scores, delimiter=",")
+	np.savetxt("test.csv", scores, delimiter=",")
 
 	
 

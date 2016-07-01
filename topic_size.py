@@ -64,19 +64,19 @@ def main():
 	cv = cross_validation.KFold(data.X.shape[0],n_folds=5)
 	cohere = [
 			
-			#coherence.Coherence(M=5,type='default'),
-			#coherence.Coherence(M=50,type='default'),
-			#coherence.Coherence(M=100,type='default'),
-			#coherence.Coherence(M=5,type='OC-Auto-PMI'),
-			#coherence.Coherence(M=50,type='OC-Auto-PMI'),
-			#coherence.Coherence(M=100,type='OC-Auto-PMI'),
-			#coherence.Coherence(M=5,type='OC-Auto-NPMI'),
-			#coherence.Coherence(M=50,type='OC-Auto-NPMI'),
-			#coherence.Coherence(M=100,type='OC-Auto-NPMI'),
+			coherence.Coherence(M=5,type='default'),
+			coherence.Coherence(M=50,type='default'),
+			coherence.Coherence(M=100,type='default'),
+			coherence.Coherence(M=5,type='OC-Auto-PMI'),
+			coherence.Coherence(M=50,type='OC-Auto-PMI'),
+			coherence.Coherence(M=100,type='OC-Auto-PMI'),
+			coherence.Coherence(M=5,type='OC-Auto-NPMI'),
+			coherence.Coherence(M=50,type='OC-Auto-NPMI'),
+			coherence.Coherence(M=100,type='OC-Auto-NPMI'),
 			coherence.Coherence(M=5,type='OC-Auto-LCP'),
 			coherence.Coherence(M=10,type='OC-Auto-LCP'),
-			#coherence.Coherence(M=50,type='OC-Auto-LCP'),	
-			#coherence.Coherence(M=100,type='OC-Auto-LCP')
+			coherence.Coherence(M=50,type='OC-Auto-LCP'),	
+			coherence.Coherence(M=100,type='OC-Auto-LCP')
 			
 		]
 
@@ -84,7 +84,7 @@ def main():
 	pipe = pipelines.Pipeline(testSet)
 	scores = pipe.evaluate(data.X,data.y)
 
-	np.savetxt("num_test_part1.csv", scores, delimiter=",")
+	np.savetxt("topic_sizes.csv", scores, delimiter=",")
 
 	
 
