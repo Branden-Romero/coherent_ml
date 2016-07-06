@@ -34,12 +34,9 @@ def coherence1(W,X,n):
 
 def coherence2(W,X,n):
 	cohere = tf.Variable(tf.zeros([n]))
-	print("0/2")
 	nmpi_val, nmpi_pos = npmi(X,20)
-	print("1/2")
 	for i in xrange(nmpi_val.shape[0]):
 			cohere = tf.add( cohere,(tf.mul( tf.constant(npmi_val[i],dtype=tf.float32), tf.mul( W[nmpi_pos[i,0],:],W[nmpi_pos[i,1],:]  ) ) ) )
-	print("2/2")
 	return cohere
 
 def clip(val,low,high):
@@ -56,13 +53,13 @@ def npmi(X,n):
 	for i in xrange(m):
 		for j in xrange(i+1,m):
 			c_word_i = np.sum((X[:,i]>0).astype(np.int))
-			p_word_i = c_word_i/np.float(m)
+			p_word_i = clip(c_word_i/np.float(m),1e-10,1)
 
 			c_word_j = np.sum((X[:,j]>0).astype(np.int))
-			p_word_j = c_word_j/np.float(m)
+			p_word_j = clip(c_word_j/np.float(m),1e-10,1)
 
 			c_word_ij = np.sum(((X[:,i]+X[:,j])==1).astype(np.int))
-			p_word_ij = c_word_ij/np.float(m)
+			p_word_ij = clip(c_word_ij/np.float(m),1e-10,1)
 			
 			npmi_ij = np.log(p_word_ij/(p_word_i*p_word_j))/-np.log(p_word_ij)
 			
@@ -102,7 +99,6 @@ class LogisticRegression():
 
 		W = tf.Variable(tf.zeros([N,K]))
 		b = tf.Variable(tf.zeros([K]))
-		print("Coherence...")
 		cohere = coherence1(W,X_data,K)
 
 		self.__y = tf.nn.softmax(tf.add(tf.matmul(self.__X,W),b))
@@ -111,7 +107,7 @@ class LogisticRegression():
 		
 		tf.initialize_all_variables().run()
 
-		print("Training...")
+		
 		for epoch in xrange(training_epochs):
 			for batch in get_batches(X_data,y_data,batch_size):
 				train_step.run({self.__X: batch[0], self.__y_:batch[1]})
