@@ -3,7 +3,6 @@ import numpy as np
 import pickle
 import operator
 import scipy.sparse as sps
-import getpass
 import os.path
 
 class SentimentData():
@@ -13,8 +12,7 @@ class SentimentData():
 		self.vocab = vocab
 
 def load(domain):
-	user = getpass.getuser()
-	dir = '/home/{0}/coherent_ml/datasets/{1}'
+	dir = '/projects/brro5352/coherent-ml/coherent_ml/datasets/{0}'
 	domains = {
 		'books':'books.pkl',
 		'dvd':'dvd.pkl',
@@ -22,11 +20,10 @@ def load(domain):
 		'kitchen':'kitchen.pkl'
 	}
 	file = domains[domain]
-	data = pickle.load(open(dir.format(user,file),"rb"))
+	data = pickle.load(open(dir.format(file),"rb"))
 	return SentimentData(data[0],data[1],data[2])
 
 def make():
-	user = getpass.getuser()
 	domains = ['books','dvd','electronics','kitchen']
 	fileIn = '/home/{0}/processed_stars/{1}/all_balanced.review'
 	fileOut = '/home/{0}/coherent_ml/datasets/{1}.pkl'
