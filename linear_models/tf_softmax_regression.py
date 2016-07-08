@@ -27,17 +27,11 @@ def l1(W):
 
 def coherence1(W,X,n):
 	cohere = tf.Variable(tf.zeros([n]))
-	nmpi_val, nmpi_pos = npmi(X,20)
-	for i in xrange(nmpi_val.shape[0]):
-			cohere = tf.add( cohere,(tf.mul( tf.constant(npmi_val[i],dtype=tf.float32),tf.pow( tf.sub( W[nmpi_pos[i,0],:],W[nmpi_pos[i,1],:] ),2 ) ) ) )
-	return cohere
-
-def coherence2(W,X,n):
-	cohere = tf.Variable(tf.zeros([n]))
-	nmpi_val, nmpi_pos = npmi(X,20)
-	for i in xrange(nmpi_val.shape[0]):
-			cohere = tf.add( cohere,(tf.mul( tf.constant(npmi_val[i],dtype=tf.float32), tf.mul( W[nmpi_pos[i,0],:],W[nmpi_pos[i,1],:]  ) ) ) )
-	return cohere
+	npmi_val, npmi_pos = npmi(X,80000)
+	for i in xrange(npmi_val.shape[0]):
+			W[npmi_pos[i,1],:]
+			cohere = tf.add( cohere,(tf.mul( tf.constant(npmi_val[i],dtype=tf.float32),tf.pow( tf.sub( W[npmi_pos[i,0],:],W[npmi_pos[i,1],:] ),2 ) ) ) )
+	return -tf.reduce_sum(cohere)
 
 def clip(val,low,high):
 	if val < low:
@@ -66,12 +60,9 @@ def npmi(X,n):
 			if npmi_ij > np.min(top_n):
 				min_pos = np.argmin(top_n)
 				top_n[min_pos] = npmi_ij
-				top_n_pos = [i,j]
+				top_n_pos[min_pos] = np.array([i,j])
 
 	return (top_n,top_n_pos)
-			
-	
-
 
 class LogisticRegression():
 	def __init__(self):
@@ -82,7 +73,7 @@ class LogisticRegression():
 		self.coef_ = None
 		self.intercept_ = None
 
-	def fit(self, X_data, y_data,learning_rate=0.01,training_epochs=1,batch_size=100,C=1.0,loss='l2'):
+	def fit(self, X_data, y_data,learning_rate=0.01,training_epochs=25,batch_size=100,C=1.0,loss='l2'):
 		losses = {
 			'l2': l2,
 			'l1': l1
@@ -102,7 +93,7 @@ class LogisticRegression():
 		cohere = coherence1(W,X_data,K)
 
 		self.__y = tf.nn.softmax(tf.add(tf.matmul(self.__X,W),b))
-		loss_function = -tf.reduce_sum(tf.mul(self.__y_,tf.log(tf.clip_by_value(self.__y,1e-10,1.0)))-cohere) #+ C * loss_func(W)
+		loss_function = -tf.reduce_sum(tf.mul(self.__y_,tf.log(tf.clip_by_value(self.__y,1e-10,1.0)))) + C * cohere
 		train_step = tf.train.AdagradOptimizer(learning_rate).minimize(loss_function)
 		
 		tf.initialize_all_variables().run()

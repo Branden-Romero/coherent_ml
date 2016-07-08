@@ -25,5 +25,10 @@ class TwentyNewsgroups():
 		vectorizer = CountVectorizer()
 		X = vectorizer.fit_transform(data.data)
 		features = vectorizer.get_feature_names()
-		return (X.astype(np.float32), features)
+		keep = np.where(np.array(X.sum(axis=0))>1)
+		X = X[:,keep[1]].astype(np.float32)
+		feat = []
+		for k in keep[1]:
+			feat.append(features[k])
+		return (X, feat)
 
