@@ -2,6 +2,11 @@ import numpy as np
 import scipy.misc
 import math
 
+def clip(x):
+	if x < 1e-10:
+		x = 1e-10
+	return x
+
 class Coherence():
 	def __init__(self,M=20,type='default',dist='cosine'):
 		self.M = M
@@ -69,10 +74,10 @@ def coherence(coefs,X,M,type='default',dist='cosine'):
 	for m in xrange(1,M):
 		for l in xrange(0,m-1):
 			if type == 'default':
-				vm = np.nonzero(X[:,topTokens[m]])[0].shape[0]
-				vl = np.nonzero(X[:,topTokens[l]])[0].shape[0]
-				vmvl = np.intersect1d(vm,vl).shape[0]
-				cohere += coherenceMetric(vmvl,vm,vl)
+				vm = np.nonzero(X[:,topTokens[m]])[0]
+				vl = np.nonzero(X[:,topTokens[l]])[0]
+				vmvl = np.intersect1d(vm,vl)
+				cohere += coherenceMetric(vmvl.shape[0],vm.shape[0],vl.shape[0])
 
 			elif type == 'OC-Auto-DS':
 				wi = (X[:,topTokens[m]] > 0).astype(np.int).toarray().T[0]
@@ -81,22 +86,20 @@ def coherence(coefs,X,M,type='default',dist='cosine'):
 				cohere += coherenceMetric(wi,wj,distribution)
 
 			elif type == 'OC-Auto-LCP':
-				vm = np.nonzero(X[:,topTokens[m]])[0].shape[0]
-				vl = np.nonzero(X[:,topTokens[l]])[0].shape[0]
-				vmvl = np.intersect1d(vm,vl).shape[0]
-				#Added smoothing factor
-				Pwjwi = (vmvl+1)/float(numDocs)
-				Pwi = (vl+1)/float(numDocs)
+				vm = np.nonzero(X[:,topTokens[m]])[0]
+				vl = np.nonzero(X[:,topTokens[l]])[0]
+				vmvl = np.intersect1d(vm,vl)
+				Pwjwi = clip(vmvl.shape[0]+1/float(numDocs))
+				Pwi = clip(vl.shape[0]/float(numDocs))
 				cohere += coherenceMetric(Pwjwi,Pwi)
 				
 			else:
-				vm = np.nonzero(X[:,topTokens[m]])[0].shape[0]
-				vl = np.nonzero(X[:,topTokens[l]])[0].shape[0]
-				vmvl = np.intersect1d(vm,vl).shape[0]
-				#Added smoothing factor
-				Pwjwi = (vmvl+1)/float(numDocs)
-				Pwi = (vl+1)/float(numDocs)
-				Pwj = (vm+1)/float(numDocs)
+				vm = np.nonzero(X[:,topTokens[m]])[0]
+				vl = np.nonzero(X[:,topTokens[l]])[0]
+				vmvl = np.intersect1d(vm,vl)
+				Pwjwi = clip(vmvl.shape[0]/float(numDocs))
+				Pwi = clip(vl.shape[0]/float(numDocs))
+				Pwj = clip(vm.shape[0]/float(numDocs))
 				cohere += coherenceMetric(Pwjwi,Pwi,Pwj)
 
 	if type == 'OC-Auto-DS':
