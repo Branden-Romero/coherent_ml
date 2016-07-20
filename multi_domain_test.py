@@ -33,16 +33,17 @@ clfs = make_classifiers(["LogisticRegression"],penalties,Cs)
 print(len(clfs))
 cohere = Coherence(type='OC-Auto-NPMI')
 for clf in clfs:
-	for i in xrange(0,N-1):
+	for i in xrange(N):
 		clf.fit(data[i].X,data[i].y)
 		cScore = cohere.score(clf,data[i].X,data[i].y,fit=False)
-		for j in xrange(i+1,N):
-			aScore = clf.score(data[j].X,data[j].y)
-			clf.fit(data[j].X,data[j].y)
-			cScores = np.append(cScore,cohere.score(clf,data[j].X,data[j].y,fit=False))
-			outData.append(np.append(aScore,cScores))
+		for j in xrange(N):
+			if j != i:
+				aScore = clf.score(data[j].X,data[j].y)
+				clf.fit(data[j].X,data[j].y)
+				cScores = np.append(cScore,cohere.score(clf,data[j].X,data[j].y,fit=False))
+				outData.append(np.append(aScore,cScores))
 
 
-np.savetxt("multi_domain.csv", outData, delimiter=",")
+np.savetxt("/lustre/janus_scratch/brro5352/multi_domain.csv", outData, delimiter=",")
 		
 			
