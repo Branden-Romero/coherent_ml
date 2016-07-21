@@ -47,6 +47,6 @@ for clf in clfs:
 		cScores = np.append(cScore,cohere.score(clf,data[i].X,data[i].y,fit=False))
 		outData.append(np.append(aScore,cScores))
 
-np.savetxt("multi_domain_cv_l21.csv", outData, delimiter=",")
+np.savetxt("/lustre/janus_scratch/brro5352/multi_domain_cv.csv", outData, delimiter=",")
 		
 			
