@@ -20,49 +20,36 @@ def get_batches(X,y,batch_size):
         return batches
 
 def l2(W):
-	return tf.nn.l2_loss(W)/2.0
+	return tf.nn.l2_loss(W)
 
 def l1(W):
 	return tf.reduce_sum(tf.abs(W))
 
-def coherence1(W,X,n):
-	cohere = tf.Variable(tf.zeros([n]))
-	npmi_val, npmi_pos = npmi(X,80000)
-	for i in xrange(npmi_val.shape[0]):
-			W[npmi_pos[i,1],:]
-			cohere = tf.add( cohere,(tf.mul( tf.constant(npmi_val[i],dtype=tf.float32),tf.pow( tf.sub( W[npmi_pos[i,0],:],W[npmi_pos[i,1],:] ),2 ) ) ) )
+def coherence1(W,X):
+	m,n = X.shape
+	m = np.float(m)
+	cohere = tf.Variable(tf.zeros([1]))
+	for i in xrange(0,n-1):
+		for j in xrange(1,n):
+				cohere = tf.add( cohere,(tf.mul( tf.constant(npmi(X[:,i],X[:,j],m) ,dtype=tf.float32),tf.reduce_sum( tf.pow( tf.sub( W[:,i],W[:,j] ),2 ) ) ) ) )
 	return -tf.reduce_sum(cohere)
 
-def clip(val,low,high):
-	if val < low:
-		val = low
-	if val > high:
-		val = high
+def clip(val):
+	if val < 1e-10:
+		val = 1e-10
 	return val
 
-def npmi(X,n):
-	m = X.shape[1]
-	top_n = np.zeros(n) - 2
-	top_n_pos = np.zeros((n,2))
-	for i in xrange(m):
-		for j in xrange(i+1,m):
-			c_word_i = np.sum((X[:,i]>0).astype(np.int))
-			p_word_i = clip(c_word_i/np.float(m),1e-10,1)
+def npmi(Xi,Xj,m):
+	vm = np.nonzero(Xi)[0]
+	vl = np.nonzero(Xj)[0]
+	vmvl = np.intersect1d(vm,vl)
 
-			c_word_j = np.sum((X[:,j]>0).astype(np.int))
-			p_word_j = clip(c_word_j/np.float(m),1e-10,1)
+	Pwjwi = clip(vmvl.shape[0]/m)
+	Pwi = clip(vl.shape[0]/m)
+	Pwj = clip(vm.shape[0]/m)
 
-			c_word_ij = np.sum(((X[:,i]+X[:,j])==1).astype(np.int))
-			p_word_ij = clip(c_word_ij/np.float(m),1e-10,1)
-			
-			npmi_ij = np.log(p_word_ij/(p_word_i*p_word_j))/-np.log(p_word_ij)
-			
-			if npmi_ij > np.min(top_n):
-				min_pos = np.argmin(top_n)
-				top_n[min_pos] = npmi_ij
-				top_n_pos[min_pos] = np.array([i,j])
-
-	return (top_n,top_n_pos)
+	return np.log(Pwjwi/(Pwi*Pwj))/(-np.log(Pwjwi))
+	
 
 class LogisticRegression():
 	def __init__(self):
@@ -76,7 +63,8 @@ class LogisticRegression():
 	def fit(self, X_data, y_data,learning_rate=0.01,training_epochs=25,batch_size=100,C=1.0,loss='l2'):
 		losses = {
 			'l2': l2,
-			'l1': l1
+			'l1': l1,
+			'coherence1': coherence1
 		}
 		loss_func = losses[loss]
 		M,N = X_data.shape
@@ -90,10 +78,9 @@ class LogisticRegression():
 
 		W = tf.Variable(tf.zeros([N,K]))
 		b = tf.Variable(tf.zeros([K]))
-		cohere = coherence1(W,X_data,K)
 
 		self.__y = tf.nn.softmax(tf.add(tf.matmul(self.__X,W),b))
-		loss_function = -tf.reduce_sum(tf.mul(self.__y_,tf.log(tf.clip_by_value(self.__y,1e-10,1.0)))) + C * cohere
+		loss_function = -tf.reduce_sum(tf.mul(self.__y_,tf.log(tf.clip_by_value(self.__y,1e-10,1.0)))) + C * coherence1(W,X_data)
 		train_step = tf.train.AdagradOptimizer(learning_rate).minimize(loss_function)
 		
 		tf.initialize_all_variables().run()

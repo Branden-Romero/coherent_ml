@@ -3,7 +3,7 @@ from linear_models import tf_softmax_regression
 from sklearn import linear_model
 import numpy as np
 
-data = twenty_newsgroups.TwentyNewsgroups(hot_one=True)
+data = twenty_newsgroups.TwentyNewsgroups(hot_one=True,min_feat=25)
 ind_train = np.random.permutation(data.y.shape[0])[:2000]
 ind_test = np.random.permutation(data.y.shape[0])[2000:2500]
 X_train = data.X[ind_train,:]

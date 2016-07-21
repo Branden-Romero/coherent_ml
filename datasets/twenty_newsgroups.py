@@ -11,9 +11,9 @@ def hot_one_conv(y):
 	return y_hot_one
 
 class TwentyNewsgroups():
-	def __init__(self,hot_one=False):
+	def __init__(self,hot_one=False,min_feat=0):
 		data = fetch_20newsgroups(subset='all')
-		self.X, self.features = self.bag_x(data)
+		self.X, self.features = self.bag_x(data,min_feat)
 		self.y = data.target
 		if hot_one==False:
 			self.y = (self.y).astype(np.float32)
@@ -21,11 +21,11 @@ class TwentyNewsgroups():
 			self.y = hot_one_conv(self.y)
 		
 
-	def bag_x(self,data):
+	def bag_x(self,data,min_feat=0):
 		vectorizer = CountVectorizer()
 		X = vectorizer.fit_transform(data.data)
 		features = vectorizer.get_feature_names()
-		keep = np.where(np.array(X.sum(axis=0))>1)
+		keep = np.where(np.array(X.sum(axis=0))>min_feat)
 		X = X[:,keep[1]].astype(np.float32)
 		feat = []
 		for k in keep[1]:
